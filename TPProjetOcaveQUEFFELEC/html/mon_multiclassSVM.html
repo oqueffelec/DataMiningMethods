@@ -1,0 +1,239 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>mon_multiclassSVM</title><meta name="generator" content="MATLAB 9.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-12-22"><meta name="DC.source" content="mon_multiclassSVM.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">DM Projet Octave QUEFFELEC</a></li><li><a href="#3">Multi class SVM</a></li><li><a href="#4">1/ nombre de points par classe</a></li><li><a href="#5">2/ Normalisation &amp; split</a></li><li><a href="#6">3/ Phase d'apprentissage</a></li><li><a href="#7">1 against 2 &amp; 3</a></li><li><a href="#8">2 against 1 &amp; 3</a></li><li><a href="#9">3 against 1 &amp; 2</a></li><li><a href="#10">Phase de test</a></li><li><a href="#11">Matrice de confusion</a></li></ul></div><pre class="codeinput">clear <span class="string">all</span>
+close <span class="string">all</span>
+clc
+</pre><h2 id="2">DM Projet Octave QUEFFELEC</h2><h2 id="3">Multi class SVM</h2><pre class="codeinput">load <span class="string">'astrodataall.mat'</span>;
+</pre><h2 id="4">1/ nombre de points par classe</h2><pre class="codeinput">nb_1=length(find(Y==1));
+nb_2=length(find(Y==2));
+nb_3=length(find(Y==3));
+</pre><h2 id="5">2/ Normalisation &amp; split</h2><pre class="codeinput">ratio=2/3;
+ratio2=0.05;
+[Xa, Ya, Xtest, Ytest] = splitdata(X, Y, ratio);
+[Xa, Ya, Xv, Yv] = splitdata(Xa, Ya, ratio2);
+
+<span class="comment">% on decide de normaliser pour que les distances aient un sens</span>
+[Xa,Xv,meanxa,stdxa] = normalizemeanstd(Xa,Xv); <span class="comment">% ATTENTION normaliser Xv par rapport a Xa !! Normaliser toujours les donnees dapprentissage !</span>
+[~, Xtest] = normalizemeanstd(Xa,Xtest,meanxa,stdxa);
+</pre><h2 id="6">3/ Phase d'apprentissage</h2><pre class="codeinput">nb=3;
+</pre><h2 id="7">1 against 2 &amp; 3</h2><pre class="codeinput">Ya1=Ya;
+Ya1(Ya1==2)=-1;
+Ya1(Ya1==3)=-1;
+
+<span class="comment">% SVM lineaire</span>
+x=Xa;
+y=Ya1;
+C=1;
+[w1, b1, alpha] = monsvmclass(x, y, C);
+ypred=monsvmval(x,w1,b1);
+erreur1 =mean(y~=ypred);
+</pre><h2 id="8">2 against 1 &amp; 3</h2><pre class="codeinput">Ya2=Ya;
+Ya2(Ya2==1)=-1;
+Ya2(Ya2==3)=-1;
+Ya2(Ya2==2)=1;
+
+
+<span class="comment">% SVM lineaire</span>
+x=Xa;
+y=Ya2;
+C=1;
+[w2, b2, alpha] = monsvmclass(x, y, C);
+ypred=monsvmval(x,w2,b2);
+erreur2 =mean(y~=ypred);
+</pre><h2 id="9">3 against 1 &amp; 2</h2><pre class="codeinput">Ya3=Ya;
+Ya3(Ya3==1)=-1;
+Ya3(Ya3==2)=-1;
+Ya3(Ya3==3)=1;
+
+
+<span class="comment">% SVM lineaire</span>
+x=Xa;
+y=Ya3;
+C=1;
+[w3, b3, alpha] = monsvmclass(x, y, C);
+ypred=monsvmval(x,w3,b3);
+erreur3 =mean(y~=ypred);
+</pre><h2 id="10">Phase de test</h2><pre class="codeinput">nb=3;
+f1=w1'*Xtest'+b1;
+f2=w2'*Xtest'+b2;
+f3=w3'*Xtest'+b3;
+F=[f1;f2;f3];
+[val ypred]=max(F);
+
+ypred=ypred';
+</pre><h2 id="11">Matrice de confusion</h2><pre class="codeinput">ytrue=Ytest;
+cm = confusionmatrice(ytrue, ypred)
+erreur=1-sum(diag(cm))/sum(sum(cm))
+</pre><pre class="codeoutput">
+cm =
+
+           0           9        1657
+           0        2312        1034
+           1          21       25787
+
+
+erreur =
+
+    0.0883
+
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2017b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+clear all
+close all
+clc
+%% DM Projet Octave QUEFFELEC
+%% Multi class SVM
+load 'astrodataall.mat';
+
+%% 1/ nombre de points par classe 
+
+nb_1=length(find(Y==1));
+nb_2=length(find(Y==2));
+nb_3=length(find(Y==3));
+
+%% 2/ Normalisation & split
+
+ratio=2/3;
+ratio2=0.05;
+[Xa, Ya, Xtest, Ytest] = splitdata(X, Y, ratio);
+[Xa, Ya, Xv, Yv] = splitdata(Xa, Ya, ratio2);
+
+% on decide de normaliser pour que les distances aient un sens
+[Xa,Xv,meanxa,stdxa] = normalizemeanstd(Xa,Xv); % ATTENTION normaliser Xv par rapport a Xa !! Normaliser toujours les donnees dapprentissage !
+[~, Xtest] = normalizemeanstd(Xa,Xtest,meanxa,stdxa);
+
+%% 3/ Phase d'apprentissage
+nb=3;
+%%  1 against 2 & 3
+Ya1=Ya;
+Ya1(Ya1==2)=-1;
+Ya1(Ya1==3)=-1;
+
+% SVM lineaire 
+x=Xa;
+y=Ya1;
+C=1;
+[w1, b1, alpha] = monsvmclass(x, y, C);
+ypred=monsvmval(x,w1,b1);
+erreur1 =mean(y~=ypred);
+
+%% 2 against 1 & 3
+Ya2=Ya;
+Ya2(Ya2==1)=-1;
+Ya2(Ya2==3)=-1;
+Ya2(Ya2==2)=1;
+
+
+% SVM lineaire 
+x=Xa;
+y=Ya2;
+C=1;
+[w2, b2, alpha] = monsvmclass(x, y, C);
+ypred=monsvmval(x,w2,b2);
+erreur2 =mean(y~=ypred);
+
+%% 3 against 1 & 2
+Ya3=Ya;
+Ya3(Ya3==1)=-1;
+Ya3(Ya3==2)=-1;
+Ya3(Ya3==3)=1;
+
+
+% SVM lineaire 
+x=Xa;
+y=Ya3;
+C=1;
+[w3, b3, alpha] = monsvmclass(x, y, C);
+ypred=monsvmval(x,w3,b3);
+erreur3 =mean(y~=ypred);
+
+%% Phase de test
+nb=3;
+f1=w1'*Xtest'+b1;
+f2=w2'*Xtest'+b2;
+f3=w3'*Xtest'+b3;
+F=[f1;f2;f3];
+[val ypred]=max(F);
+
+ypred=ypred';
+
+%% Matrice de confusion 
+ytrue=Ytest;
+cm = confusionmatrice(ytrue, ypred)
+erreur=1-sum(diag(cm))/sum(sum(cm))
+
+
+
+
+
+
+
+
+##### SOURCE END #####
+--></body></html>
